@@ -19,27 +19,30 @@ with open("systems.json", "r") as f:
     SYSTEMS = json.load(f)
 
 # Login route
-@app.route("/login")
+@app.route('/login')
 def login():
-    state = os.urandom(16).hex()
-    session["state"] = state
-    esi_url = (
-        f"https://login.eveonline.com/v2/oauth/authorize/"
-        f"?response_type=code&redirect_uri={CALLBACK_URL}"
-        f"&client_id={CLIENT_ID}&scope={SCOPES}&state={state}"
+    # Generate a unique state token and save it to the session
+    state = secrets.token_hex(16)
+    session['oauth_state'] = state
+
+    # Redirect to EVE Online's OAuth login page
+    login_url = (
+        f"{AUTH_URL}?response_type=code&redirect_uri={CALLBACK_URL}"
+        f"&client_id={CLIENT_ID}&scope=esi-ui.write_waypoint.v1&state={state}"
     )
-    return redirect(esi_url)
+    return redirect(login_url)
+
 
 # Callback route
 @app.route('/callback')
 def callback():
-    # Check state
+    # Validate the state parameter
     returned_state = request.args.get('state')
     stored_state = session.get('oauth_state')
     if returned_state != stored_state:
         return "State mismatch! Potential CSRF attack.", 400
 
-    # Exchange code for token
+    # Exchange the authorization code for an access token
     code = request.args.get('code')
     token_data = {
         'grant_type': 'authorization_code',
@@ -54,21 +57,22 @@ def callback():
     if response.status_code != 200:
         return f"Token exchange failed: {token_response.get('error_description', 'Unknown error')}"
 
-    # Save access token and user info to the session
+    # Save user data to the session
     session['access_token'] = token_response['access_token']
     session['refresh_token'] = token_response.get('refresh_token')
     session['expires_in'] = token_response.get('expires_in')
     session['logged_in'] = True
 
-    return "Login successful! You can now use the app."
+    return redirect('/')  # Redirect to the app's home page
 
 
 # Home page
 @app.route('/')
 def home():
+    # Check if the user is logged in by verifying session variables
     if not session.get('logged_in'):
-        return redirect('/login')
-    return render_template('index.html')  # Or any app-specific content
+        return redirect('/login')  # Redirect to login if not logged in
+    return render_template('index.html')  # Serve your app's main page
 
 
 # Set destination route #
