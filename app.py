@@ -5,7 +5,8 @@ import json
 import secrets
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = "e05f71dcab14188c6c174f33339910870067423832c85387bbf565e3840e6c1e"
+
 
 AUTH_URL = "https://login.eveonline.com/v2/oauth/authorize"
 
@@ -22,28 +23,28 @@ with open("systems.json", "r") as f:
     SYSTEMS = json.load(f)
 
 # Login route
-@app.route('/login')
+import secrets
+
+@app.route("/login")
 def login():
-    # Generate a unique state token and save it to the session
     state = secrets.token_hex(16)
     session['oauth_state'] = state
-
-    # Redirect to EVE Online's OAuth login page
-    login_url = (
-        f"{AUTH_URL}?response_type=code&redirect_uri={CALLBACK_URL}"
-        f"&client_id={CLIENT_ID}&scope=esi-ui.write_waypoint.v1&state={state}"
+    auth_url = (
+        f"{AUTH_URL}?response_type=code"
+        f"&redirect_uri={CALLBACK_URL}"
+        f"&client_id={CLIENT_ID}"
+        f"&state={state}"
     )
-    return redirect(login_url)
+    return redirect(auth_url)
 
 
-# Callback route
-@app.route('/callback')
+@app.route("/callback")
 def callback():
-    # Validate the state parameter
-    returned_state = request.args.get('state')
-    stored_state = session.get('oauth_state')
-    if returned_state != stored_state:
+    state = request.args.get('state')
+    if state != session.get('oauth_state'):
         return "State mismatch! Potential CSRF attack.", 400
+    # Proceed with the token exchange process
+
 
     # Exchange the authorization code for an access token
     code = request.args.get('code')
