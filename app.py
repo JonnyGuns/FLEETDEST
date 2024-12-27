@@ -36,13 +36,13 @@ def login():
 # Callback route
 @app.route('/callback')
 def callback():
-    # Validate the state parameter
+    # Check state
     returned_state = request.args.get('state')
     stored_state = session.get('oauth_state')
     if returned_state != stored_state:
         return "State mismatch! Potential CSRF attack.", 400
 
-    # Exchange the authorization code for an access token
+    # Exchange code for token
     code = request.args.get('code')
     token_data = {
         'grant_type': 'authorization_code',
@@ -57,13 +57,13 @@ def callback():
     if response.status_code != 200:
         return f"Token exchange failed: {token_response.get('error_description', 'Unknown error')}"
 
-    # Save user data to the session
+    # Save access token and user info to the session
     session['access_token'] = token_response['access_token']
     session['refresh_token'] = token_response.get('refresh_token')
     session['expires_in'] = token_response.get('expires_in')
     session['logged_in'] = True
 
-    return redirect('/')  # Redirect to the app's home page
+    return "Login successful! You can now use the app."
 
 
 # Home page
@@ -73,6 +73,7 @@ def home():
     if not session.get('logged_in'):
         return redirect('/login')  # Redirect to login if not logged in
     return render_template('index.html')  # Serve your app's main page
+
 
 
 # Set destination route #
