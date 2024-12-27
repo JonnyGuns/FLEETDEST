@@ -1,1 +1,1 @@
-web: gunicorn Original Fleet-Dest:app
+web: gunicorn Original Fleet-Dest:Flask(__name__)
