@@ -29,47 +29,35 @@ def login():
     return redirect(esi_url)
 
 # Callback route
-@app.route("/callback")
+@app.route('/callback')
 def callback():
-    code = request.args.get("code")
-    state = request.args.get("state")
+    """Handles the callback from EVE Online."""
+    code = request.args.get('code')
+    state = request.args.get('state')
 
-    if state != session.get("state"):
-        return "Invalid state parameter", 400
+    # Validate state to prevent CSRF attacks
+    if state != session.get('state'):
+        return "State mismatch! Potential CSRF attack.", 400
 
-    # Exchange authorization code for access token
-    token_url = "https://login.eveonline.com/v2/oauth/token"
-    auth = (CLIENT_ID, SECRET_KEY)
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-    data = {
-        "grant_type": "authorization_code",
-        "code": code,
-        "redirect_uri": CALLBACK_URL,
-    }
-    token_response = requests.post(token_url, headers=headers, data=data, auth=auth)
+    # Exchange the authorization code for an access token
+    token_response = requests.post(TOKEN_URL, auth=(CLIENT_ID, SECRET_KEY), data={
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': CALLBACK_URL
+    })
 
     if token_response.status_code != 200:
-        return "Failed to fetch access token", 400
+        return f"Token exchange failed: {token_response.text}", 400
 
-    access_token = token_response.json()["access_token"]
+    tokens = token_response.json()
+    access_token = tokens.get('access_token')
+    refresh_token = tokens.get('refresh_token')
 
-    # Fetch character information
-    verify_url = "https://esi.evetech.net/verify/"
-    verify_response = requests.get(verify_url, headers={"Authorization": f"Bearer {access_token}"})
-    if verify_response.status_code != 200:
-        return "Failed to verify token", 400
+    # Store tokens securely (not in plain session in production)
+    session['access_token'] = access_token
+    session['refresh_token'] = refresh_token
 
-    character_info = verify_response.json()
-    character_name = character_info["CharacterName"]
-
-    # Store character in session
-    if "characters" not in session:
-        session["characters"] = {}
-    session["characters"][character_name] = {"access_token": access_token}
-    session.modified = True
-
-    print("Updated session['characters']:", session["characters"])
-    return redirect(url_for("index"))
+    return "Login successful! You can now use the app."
 
 # Home page
 @app.route("/")
