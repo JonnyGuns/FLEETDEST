@@ -10,6 +10,8 @@ app.secret_key = os.urandom(24)
 CLIENT_ID = "83344efb272d4e469c40bec7934b050f"
 SECRET_KEY = "HdhcdDgExQj0jBZ88tif4JgBgiQcSkqSs1DRdvFP"
 CALLBACK_URL = "https://fleet-dest-cbbf9384726f.herokuapp.com/callback"
+#EVE Online Token URL
+TOKEN_URL = "https://login.eveonline.com/v2/oauth/token"
 SCOPES = "esi-ui.write_waypoint.v1"
 
 # Load systems data
