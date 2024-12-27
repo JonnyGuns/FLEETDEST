@@ -32,6 +32,10 @@
         </div>
     </div>
 
+    <div class="footer-text">
+        Envisioned by Jonny Guns - Created by ChatGPT
+    </div>
+
     <script>
         let systems = [];
 
@@ -81,15 +85,4 @@
         }
 
         async function logoutCharacter(character) {
-            const response = await fetch(`/logout/${character}`, { method: 'POST' });
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Failed to logout character');
-            }
-        }
-
-        fetchSystems();
-    </script>
-</body>
-</html>
+            const response = await fetch(`/logout-character?name=$
