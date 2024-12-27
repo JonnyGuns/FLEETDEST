@@ -9,9 +9,7 @@ app.secret_key = os.urandom(24)
 # Your ESI developer credentials
 CLIENT_ID = "83344efb272d4e469c40bec7934b050f"
 SECRET_KEY = "HdhcdDgExQj0jBZ88tif4JgBgiQcSkqSs1DRdvFP"
-CALLBACK_URL = "https://fleet-dest-cbbf9384726f.herokuapp.com/callback"
-#EVE Online Token URL
-TOKEN_URL = "https://login.eveonline.com/v2/oauth/token"
+CALLBACK_URL = "http://127.0.0.1:5000/callback"
 SCOPES = "esi-ui.write_waypoint.v1"
 
 # Load systems data
@@ -19,62 +17,65 @@ with open("systems.json", "r") as f:
     SYSTEMS = json.load(f)
 
 # Login route
-@app.route('/login')
+@app.route("/login")
 def login():
-    # Generate a unique state token and save it to the session
-    state = secrets.token_hex(16)
-    session['oauth_state'] = state
-
-    # Redirect to EVE Online's OAuth login page
-    login_url = (
-        f"{AUTH_URL}?response_type=code&redirect_uri={CALLBACK_URL}"
-        f"&client_id={CLIENT_ID}&scope=esi-ui.write_waypoint.v1&state={state}"
+    state = os.urandom(16).hex()
+    session["state"] = state
+    esi_url = (
+        f"https://login.eveonline.com/v2/oauth/authorize/"
+        f"?response_type=code&redirect_uri={CALLBACK_URL}"
+        f"&client_id={CLIENT_ID}&scope={SCOPES}&state={state}"
     )
-    return redirect(login_url)
-
+    return redirect(esi_url)
 
 # Callback route
-@app.route('/callback')
+@app.route("/callback")
 def callback():
-    # Check state
-    returned_state = request.args.get('state')
-    stored_state = session.get('oauth_state')
-    if returned_state != stored_state:
-        return "State mismatch! Potential CSRF attack.", 400
+    code = request.args.get("code")
+    state = request.args.get("state")
 
-    # Exchange code for token
-    code = request.args.get('code')
-    token_data = {
-        'grant_type': 'authorization_code',
-        'code': code,
-        'client_id': CLIENT_ID,
-        'client_secret': CLIENT_SECRET,
-        'redirect_uri': CALLBACK_URL,
+    if state != session.get("state"):
+        return "Invalid state parameter", 400
+
+    # Exchange authorization code for access token
+    token_url = "https://login.eveonline.com/v2/oauth/token"
+    auth = (CLIENT_ID, SECRET_KEY)
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    data = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": CALLBACK_URL,
     }
-    response = requests.post(TOKEN_URL, data=token_data)
-    token_response = response.json()
+    token_response = requests.post(token_url, headers=headers, data=data, auth=auth)
 
-    if response.status_code != 200:
-        return f"Token exchange failed: {token_response.get('error_description', 'Unknown error')}"
+    if token_response.status_code != 200:
+        return "Failed to fetch access token", 400
 
-    # Save access token and user info to the session
-    session['access_token'] = token_response['access_token']
-    session['refresh_token'] = token_response.get('refresh_token')
-    session['expires_in'] = token_response.get('expires_in')
-    session['logged_in'] = True
+    access_token = token_response.json()["access_token"]
 
-    return "Login successful! You can now use the app."
+    # Fetch character information
+    verify_url = "https://esi.evetech.net/verify/"
+    verify_response = requests.get(verify_url, headers={"Authorization": f"Bearer {access_token}"})
+    if verify_response.status_code != 200:
+        return "Failed to verify token", 400
 
+    character_info = verify_response.json()
+    character_name = character_info["CharacterName"]
+
+    # Store character in session
+    if "characters" not in session:
+        session["characters"] = {}
+    session["characters"][character_name] = {"access_token": access_token}
+    session.modified = True
+
+    print("Updated session['characters']:", session["characters"])
+    return redirect(url_for("index"))
 
 # Home page
-@app.route('/')
-def home():
-    # Check if the user is logged in by verifying session variables
-    if not session.get('logged_in'):
-        return redirect('/login')  # Redirect to login if not logged in
-    return render_template('index.html')  # Serve your app's main page
-
-
+@app.route("/")
+def index():
+    characters = session.get("characters", {})
+    return render_template("index.html", characters=characters)
 
 # Set destination route #
 @app.route("/set-destination", methods=["POST"])
