@@ -1,0 +1,103 @@
+body {
+    font-family: 'Orbitron', sans-serif;
+    background-image: url('/static/images/background.jpg'); /* Update with your image path */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    text-align: center;
+    background-color: rgba(60, 60, 60, 0.9); /* Slight transparency for the main container */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+button {
+    width: 200px; /* Fixed width for uniform size */
+    background-color: #FF4500; /* Matching orange */
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 10px 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2), inset 0px -2px 5px rgba(255, 255, 255, 0.1); /* Emboss effect */
+}
+
+button:hover {
+    background-color: #CC3700; /* Slightly darker orange for hover */
+}
+
+input {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+h1 {
+    font-size: 3em;
+    font-weight: bold;
+    color: #e0e0e0; /* Base light silver */
+    text-shadow:
+        0 1px 0 #b0b0b0, /* Inner shadow */
+        0 2px 4px rgba(0, 0, 0, 0.5), /* Outer shadow */
+        0 0 15px rgba(255, 255, 255, 0.3); /* Glow effect */
+    background: linear-gradient(90deg, #f5f5f5, #dcdcdc, #bfbfbf); /* Refined metallic silver gradient */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+}
+
+h2 {
+    text-align: center;
+    color: #ffffff;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    text-align: center; /* Center list items */
+}
+
+.waypoint-form {
+    margin-top: 20px;
+}
+
+#autocomplete-list div {
+    background-color: #8B4513; /* Burnt orange for the autocomplete list */
+    color: white;
+    padding: 5px;
+    cursor: pointer;
+    border-bottom: 1px solid #ccc;
+}
+
+#autocomplete-list div:hover {
+    background-color: #CC5500;
+}
+
+.footer-text {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    font-size: 12px;
+    color: #ffffff;
+    opacity: 0.7; /* Slight transparency */
+    font-family: 'Orbitron', sans-serif;
+}
