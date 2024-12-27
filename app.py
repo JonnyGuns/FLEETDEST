@@ -33,39 +33,43 @@ def login():
 # Callback route
 @app.route('/callback')
 def callback():
-    """Handles the callback from EVE Online."""
-    code = request.args.get('code')
-    state = request.args.get('state')
-
-    # Validate state to prevent CSRF attacks
-    if state != session.get('state'):
+    # Check state
+    returned_state = request.args.get('state')
+    stored_state = session.get('oauth_state')
+    if returned_state != stored_state:
         return "State mismatch! Potential CSRF attack.", 400
 
-    # Exchange the authorization code for an access token
-    token_response = requests.post(TOKEN_URL, auth=(CLIENT_ID, SECRET_KEY), data={
+    # Exchange code for token
+    code = request.args.get('code')
+    token_data = {
         'grant_type': 'authorization_code',
         'code': code,
-        'redirect_uri': CALLBACK_URL
-    })
+        'client_id': CLIENT_ID,
+        'client_secret': CLIENT_SECRET,
+        'redirect_uri': CALLBACK_URL,
+    }
+    response = requests.post(TOKEN_URL, data=token_data)
+    token_response = response.json()
 
-    if token_response.status_code != 200:
-        return f"Token exchange failed: {token_response.text}", 400
+    if response.status_code != 200:
+        return f"Token exchange failed: {token_response.get('error_description', 'Unknown error')}"
 
-    tokens = token_response.json()
-    access_token = tokens.get('access_token')
-    refresh_token = tokens.get('refresh_token')
-
-    # Store tokens securely (not in plain session in production)
-    session['access_token'] = access_token
-    session['refresh_token'] = refresh_token
+    # Save access token and user info to the session
+    session['access_token'] = token_response['access_token']
+    session['refresh_token'] = token_response.get('refresh_token')
+    session['expires_in'] = token_response.get('expires_in')
+    session['logged_in'] = True
 
     return "Login successful! You can now use the app."
 
+
 # Home page
-@app.route("/")
-def index():
-    characters = session.get("characters", {})
-    return render_template("index.html", characters=characters)
+@app.route('/')
+def home():
+    if not session.get('logged_in'):
+        return redirect('/login')
+    return render_template('index.html')  # Or any app-specific content
+
 
 # Set destination route #
 @app.route("/set-destination", methods=["POST"])
