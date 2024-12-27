@@ -7,6 +7,8 @@ import secrets
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
+AUTH_URL = "https://login.eveonline.com/v2/oauth/authorize"
+
 # Your ESI developer credentials
 CLIENT_ID = "83344efb272d4e469c40bec7934b050f"
 SECRET_KEY = "HdhcdDgExQj0jBZ88tif4JgBgiQcSkqSs1DRdvFP"
