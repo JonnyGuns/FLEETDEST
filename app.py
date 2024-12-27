@@ -9,7 +9,7 @@ app.secret_key = os.urandom(24)
 # Your ESI developer credentials
 CLIENT_ID = "83344efb272d4e469c40bec7934b050f"
 SECRET_KEY = "HdhcdDgExQj0jBZ88tif4JgBgiQcSkqSs1DRdvFP"
-CALLBACK_URL = "http://127.0.0.1:5000/callback"
+CALLBACK_URL = "https://fleet-dest-cbbf9384726f.herokuapp.com/callback"
 SCOPES = "esi-ui.write_waypoint.v1"
 
 # Load systems data
