@@ -3,51 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FleetDest</title>
     <link rel="stylesheet" href="/static/style.css">
+    <title>Fleet-Dest</title>
 </head>
 <body>
     <div class="container">
-        <h1>Fleet Destination Manager</h1>
-        {% if logged_in %}
-            <h2>Welcome, {{ character_name }}</h2>
-            <p>Enter a destination system below to send it to your fleet:</p>
-            <form class="waypoint-form">
-                <input id="system-input" type="text" placeholder="Enter Solar System" autocomplete="off">
-                <div id="autocomplete-list"></div>
-                <button type="button" id="send-destination">Send Destination</button>
-            </form>
-            <p><a href="{{ url_for('logout') }}">Log Out</a></p>
-        {% else %}
-            <p>Please log in to manage your fleet destinations:</p>
-            <a href="{{ url_for('login') }}" class="button">Log In with EVE Online</a>
-        {% endif %}
-    </div>
-    <div class="footer">
-        <small>Envisioned by Jonny Guns - Created by ChatGPT</small>
-    </div>
-    <script>
-        // Autocomplete functionality
-        document.getElementById("system-input").addEventListener("input", function () {
-            const query = this.value;
-            const autocompleteList = document.getElementById("autocomplete-list");
-            autocompleteList.innerHTML = "";
-            if (!query) return;
+        <h1>Fleet-Dest</h1>
+        <button onclick="window.location.href='/login'">Login Character</button>
+        <button onclick="window.location.href='/logout'">Logout All</button>
 
-            fetch(`/search/${query}`)
-                .then(response => response.json())
-                .then(results => {
-                    results.forEach(result => {
-                        const div = document.createElement("div");
-                        div.textContent = result;
-                        div.addEventListener("click", function () {
-                            document.getElementById("system-input").value = result;
-                            autocompleteList.innerHTML = "";
-                        });
-                        autocompleteList.appendChild(div);
-                    });
+        <div class="character-list">
+            <h2>Logged-In Characters:</h2>
+            <ul id="characters">
+                {% for character, data in characters.items() %}
+                <li>
+                    {{ character }}
+                    <button onclick="logoutCharacter('{{ character }}')">Logout</button>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="waypoint-form">
+            <h2>Set Waypoint</h2>
+            <input type="text" id="system_id" placeholder="Enter System Name" oninput="autocompleteSystems()">
+            <div id="autocomplete-list" style="position: relative; z-index: 1000;"></div>
+            <button onclick="setDestination()">Set Destination</button>
+        </div>
+    </div>
+
+    <div class="footer-text">
+        Envisioned by Jonny Guns - Created by ChatGPT (12/27/2024)
+    </div>
+
+    <script>
+        let systems = [];
+
+        async function fetchSystems() {
+            const response = await fetch('/systems');
+            systems = await response.json();
+        }
+
+        function autocompleteSystems() {
+            const input = document.getElementById('system_id');
+            const list = document.getElementById('autocomplete-list');
+            const query = input.value.toLowerCase();
+            list.innerHTML = '';
+
+            if (query.length > 0) {
+                const matches = systems.filter(system => system.name.toLowerCase().startsWith(query));
+                matches.forEach(match => {
+                    const item = document.createElement('div');
+                    item.textContent = match.name;
+                    item.style.cursor = 'pointer';
+                    item.onclick = () => {
+                        input.value = match.name;
+                        list.innerHTML = '';
+                    };
+                    list.appendChild(item);
                 });
-        });
-    </script>
-</body>
-</html>
+            }
+        }
+
+        async function setDestination() {
+            const systemName = document.getElementById('system_id').value;
+            const system = systems.find(s => s.name === systemName);
+
+            if (!system) {
+                alert('System not found!');
+                return;
+            }
+
+            const response = await fetch('/set-destination', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ system_id: system.id, add_to_route: false })
+            });
+            const result = await response.json();
+            console.log(result);
+            alert(JSON.stringify(result));
+        }
+
+        async function logoutCharacter(character) {
+            const response = await fetch(`/logout-character?name=$
