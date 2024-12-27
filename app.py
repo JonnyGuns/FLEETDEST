@@ -1,4 +1,4 @@
-from flask import Flask, session, redirect, url_for, request, render_template
+from flask import Flask, session, redirect, url_for, request, jsonify, render_template
 import secrets
 import requests
 
@@ -68,6 +68,13 @@ def logout():
     """Log out the user and clear the session."""
     session.clear()
     return redirect(url_for("index"))
+
+@app.route("/search/<query>")
+def search(query):
+    """Mock solar system search."""
+    mock_data = ["Amarr", "Jita", "Rens", "Dodixie", "Hek"]
+    results = [system for system in mock_data if query.lower() in system.lower()]
+    return jsonify(results)
 
 if __name__ == "__main__":
     app.run(debug=True)
