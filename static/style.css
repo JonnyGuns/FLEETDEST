@@ -46,11 +46,15 @@ button:hover {
     padding: 5px 10px; /* Adjusted padding */
     font-size: 14px; /* Smaller font size */
     margin: 5px; /* Smaller margin */
-    background-color: #FF6347; /* Slightly different shade for visibility */
+    background-color: #FF4500; /* Consistent orange color */
+    border: none;
+    color: white;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2), inset 0px -2px 5px rgba(255, 255, 255, 0.1); /* Emboss effect */
 }
 
 .logout-character-button:hover {
-    background-color: #CC4F39; /* Hover color */
+    background-color: #CC3700; /* Hover color consistent with main buttons */
 }
 
 input {
