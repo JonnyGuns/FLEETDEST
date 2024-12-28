@@ -11,6 +11,13 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+
+ .logout-character {
+    transform: scale(0.5); /* Shrink to 50% */
+    display: inline-block;
+    margin: 5px; /* Adjust margin for spacing */
+}
+
 }
 
 .container {
