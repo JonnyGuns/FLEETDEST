@@ -1,4 +1,4 @@
-/* Existing CSS (unchanged) */
+/* Existing styles (unchanged) */
 body {
     font-family: 'Orbitron', sans-serif;
     background-image: url('/static/images/background.jpg');
@@ -42,7 +42,31 @@ button:hover {
     background-color: #CC3700;
 }
 
-/* Added Toast Notification CSS */
+input {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.waypoint-form {
+    margin-top: 20px;
+}
+
+/* Autocomplete styles */
+#autocomplete-list div {
+    background-color: #8B4513;
+    color: white;
+    padding: 5px;
+    cursor: pointer;
+    border-bottom: 1px solid #ccc;
+}
+
+#autocomplete-list div:hover {
+    background-color: #CC5500;
+}
+
+/* Toast notification styles */
 .toast-container {
     position: fixed;
     bottom: 20px;
@@ -81,4 +105,17 @@ button:hover {
     }
     to {
         opacity: 0.9;
+        transform: translateY(0);
+    }
+}
 
+@keyframes fadeout {
+    from {
+        opacity: 0.9;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
