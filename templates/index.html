@@ -39,6 +39,9 @@
         <span style="font-size: 12px;">(Character Name: Jonny Guns McGuire)</span>
     </div>
 
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
     <script>
         let systems = [];
 
@@ -68,39 +71,73 @@
             }
         }
 
+        function showToast(message, type = "success") {
+            const toastContainer = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
         async function setDestination() {
             const systemName = document.getElementById('system_id').value;
             const system = systems.find(s => s.name === systemName);
 
             if (!system) {
-                alert('System not found!');
+                showToast('System not found!', 'error');
                 return;
             }
 
-            const response = await fetch('/set-destination', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ system_id: system.id, add_to_route: false })
-            });
-            const result = await response.json();
-            console.log(result);
-            alert(JSON.stringify(result));
+            try {
+                const response = await fetch('/set-destination', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ system_id: system.id, add_to_route: false })
+                });
+                const result = await response.json();
+
+                if (!response.ok || result.error) {
+                    showToast(result.error || 'Failed to set destination', 'error');
+                } else {
+                    showToast('Destination set successfully!', 'success');
+                }
+            } catch (error) {
+                showToast('An error occurred while setting destination', 'error');
+            }
         }
 
         async function logoutCharacter(character) {
-            const response = await fetch(`/logout/${character}`, { method: 'POST' });
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Failed to logout character');
+            try {
+                const response = await fetch(`/logout-character/${character}`, { method: 'POST' });
+                if (response.ok) {
+                    showToast(`${character} logged out successfully`, 'success');
+                    location.reload();
+                } else {
+                    showToast('Failed to logout character', 'error');
+                }
+            } catch (error) {
+                showToast('An error occurred during logout', 'error');
             }
         }
 
         async function clearWaypoints() {
-            const response = await fetch('/clear-waypoints', { method: 'POST' });
-            const result = await response.json();
-            console.log(result);
-            alert(JSON.stringify(result));
+            try {
+                const response = await fetch('/clear-waypoints', { method: 'POST' });
+                const result = await response.json();
+
+                if (!response.ok || result.error) {
+                    showToast(result.error || 'Failed to clear waypoints', 'error');
+                } else {
+                    showToast('All waypoints cleared successfully!', 'success');
+                }
+            } catch (error) {
+                showToast('An error occurred while clearing waypoints', 'error');
+            }
         }
 
         fetchSystems();
