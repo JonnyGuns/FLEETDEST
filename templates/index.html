@@ -11,6 +11,7 @@
         <h1>Fleet-Dest</h1>
         <button onclick="window.location.href='/login'">Login Character</button>
         <button onclick="window.location.href='/logout'">Logout All</button>
+        <button onclick="clearWaypoints()">Clear All Waypoints</button>
 
         <div class="character-list">
             <h2>Logged-In Characters:</h2>
@@ -87,6 +88,13 @@
             } else {
                 alert('Failed to logout character');
             }
+        }
+
+        async function clearWaypoints() {
+            const response = await fetch('/clear-waypoints', { method: 'POST' });
+            const result = await response.json();
+            console.log(result);
+            alert(JSON.stringify(result));
         }
 
         fetchSystems();
