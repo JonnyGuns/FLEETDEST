@@ -4,75 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/style.css">
-    <style>
-        button {
-            width: 200px; /* Fixed width for uniform size */
-            background-color: #4b0082; /* Deeper violet */
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 10px 5px;
-            cursor: pointer;
-            border-radius: 5px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2), inset 0px -2px 5px rgba(255, 255, 255, 0.1); /* Emboss effect */
-        }
-
-        button.logout-character {
-            transform: scale(0.5); /* Shrink to 50% */
-            display: inline-block;
-            margin: 5px; /* Adjust margin for spacing */
-        }
-
-        button:hover {
-            background-color: #360062; /* Slightly darker violet for hover */
-        }
-
-        .container {
-            text-align: center; /* Center all text */
-        }
-
-        input {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        h1 {
-            text-align: center; /* Center headings */
-            font-size: 3em;
-            font-weight: bold;
-            color: #d4af37; /* Gold metallic color */
-            text-shadow:
-                0 1px 0 #b38627, /* Inner shadow */
-                0 2px 3px rgba(0, 0, 0, 0.5), /* Outer shadow */
-                0 0 20px rgba(255, 255, 255, 0.2); /* Glow effect */
-            background: linear-gradient(90deg, #f0e68c, #d4af37, #a9862c);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        h2 {
-            text-align: center;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        li {
-            text-align: center; /* Center list items */
-        }
-
-        .waypoint-form {
-            margin-top: 20px;
-        }
-    </style>
     <title>Fleet-Dest</title>
 </head>
 <body>
@@ -85,8 +16,9 @@
             <h2>Logged-In Characters:</h2>
             <ul id="characters">
                 {% for character, data in characters.items() %}
-                <li>{{ character }}
-                    <button class="logout-character" onclick="logoutCharacter('{{ character }}')">Logout</button>
+                <li>
+                    {{ character }}
+                    <button class="logout-character-button" onclick="logoutCharacter('{{ character }}')">Logout</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -146,6 +78,17 @@
             const result = await response.json();
             console.log(result);
             alert(JSON.stringify(result));
+        }
+
+        async function logoutCharacter(characterName) {
+            const response = await fetch(`/logout-character/${characterName}`, { method: 'POST' });
+            const result = await response.json();
+            if (result.message) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert(result.error);
+            }
         }
 
         fetchSystems();
