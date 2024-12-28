@@ -16,7 +16,7 @@ app.config["SESSION_USE_SIGNER"] = True
 app.config["SESSION_KEY_PREFIX"] = "flask_session:"
 app.config["SESSION_REDIS"] = Redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 
-app.config["SESSION_COOKIE_NAME"] = "your_cookie_name"
+app.config["SESSION_COOKIE_NAME"] = "fleetdest_session"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SECURE"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
