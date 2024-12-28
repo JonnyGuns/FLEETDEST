@@ -18,7 +18,7 @@
                 {% for character, data in characters.items() %}
                 <li>
                     {{ character }}
-                    <button onclick="logoutCharacter('{{ character }}')">Logout</button>
+                    <button class="logout-character-button" onclick="logoutCharacter('{{ character }}')">Logout</button>
                 </li>
                 {% endfor %}
             </ul>
