@@ -11,13 +11,6 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-
- .logout-character {
-    transform: scale(0.5); /* Shrink to 50% */
-    display: inline-block;
-    margin: 5px; /* Adjust margin for spacing */
-}
-
 }
 
 .container {
@@ -46,6 +39,18 @@ button {
 
 button:hover {
     background-color: #CC3700; /* Slightly darker orange for hover */
+}
+
+.logout-character-button {
+    width: 100px; /* Reduced to 50% of original size */
+    padding: 5px 10px; /* Adjusted padding */
+    font-size: 14px; /* Smaller font size */
+    margin: 5px; /* Smaller margin */
+    background-color: #FF6347; /* Slightly different shade for visibility */
+}
+
+.logout-character-button:hover {
+    background-color: #CC4F39; /* Hover color */
 }
 
 input {
