@@ -76,6 +76,12 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ system_id: system.id, add_to_route: false })
             });
+
+            if (response.status === 401) {
+                await refreshTokens();
+                return setDestination(); // Retry after refreshing token
+            }
+
             const result = await response.json();
             console.log(result);
             alert(JSON.stringify(result));
@@ -92,9 +98,25 @@
 
         async function clearWaypoints() {
             const response = await fetch('/clear-waypoints', { method: 'POST' });
+
+            if (response.status === 401) {
+                await refreshTokens();
+                return clearWaypoints(); // Retry after refreshing token
+            }
+
             const result = await response.json();
             console.log(result);
             alert(JSON.stringify(result));
+        }
+
+        async function refreshTokens() {
+            const response = await fetch('/refresh-tokens', { method: 'POST' });
+            if (response.ok) {
+                console.log('Tokens refreshed successfully');
+            } else {
+                alert('Failed to refresh tokens. Please log in again.');
+                window.location.href = '/login';
+            }
         }
 
         fetchSystems();
