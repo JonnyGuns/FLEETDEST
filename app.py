@@ -120,6 +120,31 @@ def set_destination():
 
     return jsonify(results)
 
+# Clear all waypoints route
+@app.route("/clear-waypoints", methods=["POST"])
+def clear_waypoints():
+    characters = session.get("characters", {})
+    results = {}
+
+    for character_name, character_data in characters.items():
+        headers = {"Authorization": f"Bearer {character_data['access_token']}"}
+        params = {
+            "destination_id": None,
+            "add_to_beginning": False,
+            "clear_other_waypoints": True,
+        }
+        response = requests.post(
+            "https://esi.evetech.net/v2/ui/autopilot/waypoint/",
+            headers=headers,
+            params=params,
+        )
+        if response.status_code == 204:
+            results[character_name] = "Waypoints cleared successfully"
+        else:
+            results[character_name] = f"Error: {response.text}"
+
+    return jsonify(results)
+
 # Systems route for autocomplete
 @app.route("/systems")
 def systems():
