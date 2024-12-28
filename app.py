@@ -1,10 +1,11 @@
 from flask import Flask, session, redirect, url_for, request, jsonify, render_template
 from flask_session import Session
+from flask.sessions import SecureCookieSessionInterface
 import requests
 import os
 import json
 import pickle
-import redis
+
 
 app = Flask(__name__)
 
@@ -14,15 +15,11 @@ app.secret_key = "e05f71dcab14188c6c174f33339910870067423832c85387bbf565e3840e6c
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = '724b6bc17375e9ae0fe3a6bd9b671d2e9daa55d306d6d9563d704ee345b6dd86'
-app.config['SESSION_TYPE'] = 'redis'
-app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_KEY_PREFIX'] = 'your_prefix:'
-app.config['SESSION_REDIS'] = redis.StrictRedis(
-    host='redis-13367.c8.us-east-1-2.ec2.redns.redis-cloud.com',
-    port=13367,
-    password='YEfp7D27cwltDJKOTcND7Ua2yNRYpxdB'
-)
+app.config['SESSION_COOKIE_NAME'] = 'my_session'
+
 
 # Use Pickle to handle bytes-like objects
 app.config["SESSION_SERIALIZER"] = pickle
@@ -33,6 +30,26 @@ app.config["SESSION_COOKIE_NAME"] = "fleetdest_session"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SECURE"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+# Custom in-memory session interface
+class InMemorySessionInterface(SecureCookieSessionInterface):
+    def __init__(self):
+        self.session_storage = {}
+
+    def open_session(self, app, request):
+        session_id = request.cookies.get(app.config['SESSION_COOKIE_NAME'])
+        if not session_id:
+            return self.get_signing_serializer(app).loads('{}')
+        return self.session_storage.get(session_id, self.get_signing_serializer(app).loads('{}'))
+
+    def save_session(self, app, session, response):
+        if not session:
+            return
+        session_id = self.get_signing_serializer(app).dumps(dict(session))
+        self.session_storage[session_id] = session
+        response.set_cookie(app.config['SESSION_COOKIE_NAME'], session_id)
+
+app.session_interface = InMemorySessionInterface()
 
 
 # Initialize the session
