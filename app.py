@@ -2,9 +2,20 @@ from flask import Flask, session, redirect, url_for, request, jsonify, render_te
 import requests
 import os
 import json
+from flask_session import Session
 
 app = Flask(__name__)
 app.secret_key = "e05f71dcab14188c6c174f33339910870067423832c85387bbf565e3840e6c1e"
+
+# Configure session to use filesystem
+app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_FILE_DIR"] = "./flask_session"
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_USE_SIGNER"] = True
+app.config["SESSION_KEY_PREFIX"] = "fleetdest:"
+
+# Initialize session
+Session(app)
 
 # Your ESI developer credentials
 CLIENT_ID = "83344efb272d4e469c40bec7934b050f"
