@@ -3,8 +3,8 @@ from flask_session import Session
 import requests
 import os
 import json
-from redis import Redis
 import pickle
+import redis
 
 app = Flask(__name__)
 
@@ -13,12 +13,11 @@ app.secret_key = "e05f71dcab14188c6c174f33339910870067423832c85387bbf565e3840e6c
 # Flask configuration
 app = Flask(__name__)
 
-
 app.config["SESSION_TYPE"] = "redis"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_USE_SIGNER"] = True
 app.config["SESSION_KEY_PREFIX"] = "fleetdest:"
-app.config["SESSION_REDIS"] = redis.StrictRedis(host='localhost', port=6379, db=0)
+app.config["SESSION_REDIS"] = redis.from_url("redis://default:YEfp7D27cwltDJKOTcND7Ua2yNRYpxdB@redis-13367.c8.us-east-1-2.ec2.redns.redis-cloud.com:13367")
 
 # Use Pickle to handle bytes-like objects
 app.config["SESSION_SERIALIZER"] = pickle
