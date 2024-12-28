@@ -9,7 +9,7 @@ app.secret_key = "e05f71dcab14188c6c174f33339910870067423832c85387bbf565e3840e6c
 
 # Configure session to use filesystem
 app.config["SESSION_TYPE"] = "filesystem"
-app.config["SESSION_FILE_DIR"] = "./flask_session"
+app.config["SESSION_FILE_DIR"] = "/tmp/flask_session"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_USE_SIGNER"] = True
 app.config["SESSION_KEY_PREFIX"] = "fleetdest:"
