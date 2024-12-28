@@ -1,15 +1,38 @@
 from flask import Flask, session, redirect, url_for, request, jsonify, render_template
+from flask_session import Session
 import requests
 import os
 import json
+from redis import Redis
 
 app = Flask(__name__)
+
 app.secret_key = "e05f71dcab14188c6c174f33339910870067423832c85387bbf565e3840e6c1e"
+
+# Flask configuration
+app.secret_key = "super_secret_key"
+app.config["SESSION_TYPE"] = "redis"
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_USE_SIGNER"] = True
+app.config["SESSION_KEY_PREFIX"] = "flask_session:"
+app.config["SESSION_REDIS"] = Redis(host="localhost", port=6379, decode_responses=True)
+
+# Initialize Flask-Session2
+sess = Session(app)
 
 # Your ESI developer credentials
 CLIENT_ID = "83344efb272d4e469c40bec7934b050f"
 SECRET_KEY = "HdhcdDgExQj0jBZ88tif4JgBgiQcSkqSs1DRdvFP"
 CALLBACK_URL = "https://fleet-dest-cbbf9384726f.herokuapp.com/callback"
+
+# Initialize Flask-Session
+sess = Session()
+sess.init_app(app)
+
+@app.route("/")
+def index():
+    return "Redis-backed session configured!"
+
 
 SCOPES = "esi-ui.write_waypoint.v1"
 
