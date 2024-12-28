@@ -84,6 +84,13 @@ h2 {
     color: #ffffff;
 }
 
+#error-message {
+    font-size: 14px;
+    color: red;
+    text-align: center;
+    margin-top: 10px;
+}
+
 ul {
     list-style-type: none;
     padding: 0;
