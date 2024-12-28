@@ -1,65 +1,15 @@
 from flask import Flask, session, redirect, url_for, request, jsonify, render_template
-from flask_session import Session
-from flask.sessions import SecureCookieSessionInterface
 import requests
 import os
 import json
-import pickle
-
 
 app = Flask(__name__)
-
 app.secret_key = "e05f71dcab14188c6c174f33339910870067423832c85387bbf565e3840e6c1e"
-
-# Flask configuration
-app = Flask(__name__)
-
-app.config['SECRET_KEY'] = '724b6bc17375e9ae0fe3a6bd9b671d2e9daa55d306d6d9563d704ee345b6dd86'
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_PERMANENT'] = True
-app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_COOKIE_NAME'] = 'my_session'
-
-
-# Use Pickle to handle bytes-like objects
-app.config["SESSION_SERIALIZER"] = pickle
-
-Session(app)
-
-app.config["SESSION_COOKIE_NAME"] = "fleetdest_session"
-app.config["SESSION_COOKIE_HTTPONLY"] = True
-app.config["SESSION_COOKIE_SECURE"] = True
-app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-
-# Custom in-memory session interface
-class InMemorySessionInterface(SecureCookieSessionInterface):
-    def __init__(self):
-        self.session_storage = {}
-
-    def open_session(self, app, request):
-        session_id = request.cookies.get(app.config['SESSION_COOKIE_NAME'])
-        if not session_id:
-            return self.get_signing_serializer(app).loads('{}')
-        return self.session_storage.get(session_id, self.get_signing_serializer(app).loads('{}'))
-
-    def save_session(self, app, session, response):
-        if not session:
-            return
-        session_id = self.get_signing_serializer(app).dumps(dict(session))
-        self.session_storage[session_id] = session
-        response.set_cookie(app.config['SESSION_COOKIE_NAME'], session_id)
-
-app.session_interface = InMemorySessionInterface()
-
-
-# Initialize the session
-Session(app)
 
 # Your ESI developer credentials
 CLIENT_ID = "83344efb272d4e469c40bec7934b050f"
 SECRET_KEY = "HdhcdDgExQj0jBZ88tif4JgBgiQcSkqSs1DRdvFP"
 CALLBACK_URL = "https://fleet-dest-cbbf9384726f.herokuapp.com/callback"
-
 
 SCOPES = "esi-ui.write_waypoint.v1"
 
@@ -180,10 +130,6 @@ def logout_character(character_name):
         return jsonify({"message": f"{character_name} logged out successfully"}), 200
     return jsonify({"error": f"{character_name} not found"}), 404
 
-@app.before_request
-def log_session_data():
-    for key, value in session.items():
-        print(f"Key: {key}, Value: {value}, Type: {type(value)}")
 
 if __name__ == "__main__":
     app.run(debug=True)
