@@ -17,8 +17,8 @@ app.config["SESSION_USE_SIGNER"] = True
 app.config["SESSION_KEY_PREFIX"] = "flask_session:"
 app.config["SESSION_REDIS"] = Redis(host="localhost", port=6379, decode_responses=True)
 
-# Initialize Flask-Session2
-sess = Session(app)
+# Initialize the session
+Session(app)
 
 # Your ESI developer credentials
 CLIENT_ID = "83344efb272d4e469c40bec7934b050f"
@@ -28,10 +28,6 @@ CALLBACK_URL = "https://fleet-dest-cbbf9384726f.herokuapp.com/callback"
 # Initialize Flask-Session
 sess = Session()
 sess.init_app(app)
-
-@app.route("/")
-def index():
-    return "Redis-backed session configured!"
 
 
 SCOPES = "esi-ui.write_waypoint.v1"
