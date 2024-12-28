@@ -10,7 +10,7 @@
     <div class="container">
         <h1>Fleet-Dest</h1>
         <button onclick="window.location.href='/login'">Login Character</button>
-        <button onclick="window.location.href='/logout'">Logout</button>
+        <button onclick="window.location.href='/logout'">Logout All</button>
 
         <div class="character-list">
             <h2>Logged-In Characters:</h2>
@@ -18,7 +18,7 @@
                 {% for character, data in characters.items() %}
                 <li>
                     {{ character }}
-                    <button class="logout-character-button" onclick="logoutCharacter('{{ character }}')">Logout</button>
+                    <button onclick="logoutCharacter('{{ character }}')">Logout</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -80,14 +80,12 @@
             alert(JSON.stringify(result));
         }
 
-        async function logoutCharacter(characterName) {
-            const response = await fetch(`/logout-character/${characterName}`, { method: 'POST' });
-            const result = await response.json();
-            if (result.message) {
-                alert(result.message);
+        async function logoutCharacter(character) {
+            const response = await fetch(`/logout/${character}`, { method: 'POST' });
+            if (response.ok) {
                 location.reload();
             } else {
-                alert(result.error);
+                alert('Failed to logout character');
             }
         }
 
