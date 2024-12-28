@@ -4,17 +4,26 @@ import requests
 import os
 import json
 from redis import Redis
+import pickle
 
 app = Flask(__name__)
 
 app.secret_key = "e05f71dcab14188c6c174f33339910870067423832c85387bbf565e3840e6c1e"
 
 # Flask configuration
+app = Flask(__name__)
+
+
 app.config["SESSION_TYPE"] = "redis"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_USE_SIGNER"] = True
-app.config["SESSION_KEY_PREFIX"] = "flask_session:"
-app.config["SESSION_REDIS"] = Redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
+app.config["SESSION_KEY_PREFIX"] = "fleetdest:"
+app.config["SESSION_REDIS"] = redis.StrictRedis(host='localhost', port=6379, db=0)
+
+# Use Pickle to handle bytes-like objects
+app.config["SESSION_SERIALIZER"] = pickle
+
+Session(app)
 
 app.config["SESSION_COOKIE_NAME"] = "fleetdest_session"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
