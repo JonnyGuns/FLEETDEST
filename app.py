@@ -10,12 +10,17 @@ app = Flask(__name__)
 app.secret_key = "e05f71dcab14188c6c174f33339910870067423832c85387bbf565e3840e6c1e"
 
 # Flask configuration
-app.secret_key = "super_secret_key"
 app.config["SESSION_TYPE"] = "redis"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_USE_SIGNER"] = True
 app.config["SESSION_KEY_PREFIX"] = "flask_session:"
-app.config["SESSION_REDIS"] = Redis(host="localhost", port=6379, decode_responses=True)
+app.config["SESSION_REDIS"] = Redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
+
+app.config["SESSION_COOKIE_NAME"] = "your_cookie_name"
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
 
 # Initialize the session
 Session(app)
@@ -24,10 +29,6 @@ Session(app)
 CLIENT_ID = "83344efb272d4e469c40bec7934b050f"
 SECRET_KEY = "HdhcdDgExQj0jBZ88tif4JgBgiQcSkqSs1DRdvFP"
 CALLBACK_URL = "https://fleet-dest-cbbf9384726f.herokuapp.com/callback"
-
-# Initialize Flask-Session
-sess = Session()
-sess.init_app(app)
 
 
 SCOPES = "esi-ui.write_waypoint.v1"
@@ -149,6 +150,10 @@ def logout_character(character_name):
         return jsonify({"message": f"{character_name} logged out successfully"}), 200
     return jsonify({"error": f"{character_name} not found"}), 404
 
+@app.before_request
+def log_session_data():
+    for key, value in session.items():
+        print(f"Key: {key}, Value: {value}, Type: {type(value)}")
 
 if __name__ == "__main__":
     app.run(debug=True)
