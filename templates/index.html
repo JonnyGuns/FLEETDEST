@@ -1,125 +1,120 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/style.css">
-    <title>Fleet-Dest</title>
-</head>
-<body>
-    <div class="container">
-        <h1>Fleet-Dest</h1>
-        <button onclick="window.location.href='/login'">Login Character</button>
-        <button onclick="window.location.href='/logout'">Logout All</button>
-        <button onclick="clearWaypoints()">Clear All Waypoints</button>
+body {
+    font-family: 'Orbitron', sans-serif;
+    background-image: url('/static/images/background.jpg'); /* Update with your image path */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
 
-        <div class="character-list">
-            <h2>Logged-In Characters:</h2>
-            <ul id="characters">
-                {% for character, data in characters.items() %}
-                <li>
-                    {{ character }}
-                    <button class="logout-character-button" onclick="logoutCharacter('{{ character }}')">Logout</button>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
+.container {
+    text-align: center;
+    background-color: rgba(60, 60, 60, 0.9); /* Slight transparency for the main container */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
 
-        <div class="waypoint-form">
-            <h2>Set Waypoint</h2>
-            <input type="text" id="system_id" placeholder="Enter System Name" oninput="autocompleteSystems()">
-            <div id="autocomplete-list" style="position: relative; z-index: 1000;"></div>
-            <button onclick="setDestination()">Set Destination</button>
-        </div>
-    </div>
+button {
+    width: 200px; /* Fixed width for uniform size */
+    background-color: #FF4500; /* Matching orange */
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 10px 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2), inset 0px -2px 5px rgba(255, 255, 255, 0.1); /* Emboss effect */
+}
 
-    <script>
-        let systems = [];
+button:hover {
+    background-color: #CC3700; /* Slightly darker orange for hover */
+}
 
-        async function fetchSystems() {
-            const response = await fetch('/systems');
-            systems = await response.json();
-        }
+.logout-character-button {
+    width: 100px; /* Reduced size */
+    padding: 5px 10px; /* Adjust padding for smaller size */
+    font-size: 12px; /* Smaller text size */
+    background-color: #FF4500; /* Ensure it matches the orange color */
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 5px; /* Adjust margins */
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2), inset 0px -1px 3px rgba(255, 255, 255, 0.1); /* Emboss effect */
+}
 
-        function autocompleteSystems() {
-            const input = document.getElementById('system_id');
-            const list = document.getElementById('autocomplete-list');
-            const query = input.value.toLowerCase();
-            list.innerHTML = '';
+.logout-character-button:hover {
+    background-color: #CC3700; /* Matching hover effect */
+}
 
-            if (query.length > 0) {
-                const matches = systems.filter(system => system.name.toLowerCase().startsWith(query));
-                matches.forEach(match => {
-                    const item = document.createElement('div');
-                    item.textContent = match.name;
-                    item.style.cursor = 'pointer';
-                    item.onclick = () => {
-                        input.value = match.name;
-                        list.innerHTML = '';
-                    };
-                    list.appendChild(item);
-                });
-            }
-        }
+input {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
 
-        async function setDestination() {
-            const systemName = document.getElementById('system_id').value;
-            const system = systems.find(s => s.name === systemName);
+h1 {
+    font-size: 3em;
+    font-weight: bold;
+    color: #e0e0e0; /* Base light silver */
+    text-shadow:
+        0 1px 0 #b0b0b0, /* Inner shadow */
+        0 2px 4px rgba(0, 0, 0, 0.5), /* Outer shadow */
+        0 0 15px rgba(255, 255, 255, 0.3); /* Glow effect */
+    background: linear-gradient(90deg, #f5f5f5, #dcdcdc, #bfbfbf); /* Refined metallic silver gradient */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+}
 
-            if (!system) {
-                alert('System not found!');
-                return;
-            }
+h2 {
+    text-align: center;
+    color: #ffffff;
+}
 
-            const response = await fetch('/set-destination', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ system_id: system.id, add_to_route: false })
-            });
+ul {
+    list-style-type: none;
+    padding: 0;
+}
 
-            if (response.status === 401) {
-                await refreshTokens();
-                return setDestination(); // Retry after refreshing token
-            }
+li {
+    text-align: center; /* Center list items */
+}
 
-            const result = await response.json();
-            console.log(result);
-            alert(JSON.stringify(result));
-        }
+.waypoint-form {
+    margin-top: 20px;
+}
 
-        async function logoutCharacter(character) {
-            const response = await fetch(`/logout/${character}`, { method: 'POST' });
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Failed to logout character');
-            }
-        }
+#autocomplete-list div {
+    background-color: #8B4513; /* Burnt orange for the autocomplete list */
+    color: white;
+    padding: 5px;
+    cursor: pointer;
+    border-bottom: 1px solid #ccc;
+}
 
-        async function clearWaypoints() {
-            const response = await fetch('/clear-waypoints', { method: 'POST' });
+#autocomplete-list div:hover {
+    background-color: #CC5500;
+}
 
-            if (response.status === 401) {
-                await refreshTokens();
-                return clearWaypoints(); // Retry after refreshing token
-            }
-
-            const result = await response.json();
-            console.log(result);
-            alert(JSON.stringify(result));
-        }
-
-        async function refreshTokens() {
-            const response = await fetch('/refresh-tokens', { method: 'POST' });
-            if (response.ok) {
-                console.log('Tokens refreshed successfully');
-            } else {
-                alert('Failed to refresh tokens. Please log in again.');
-                window.location.href = '/login';
-            }
-        }
-
-        fetchSystems();
-    </script>
-</body>
-</html>
+.footer-text {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    font-size: 12px;
+    color: #ffffff;
+    opacity: 0.7; /* Slight transparency */
+    font-family: 'Orbitron', sans-serif;
+}
