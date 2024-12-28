@@ -14,12 +14,15 @@ app.secret_key = "e05f71dcab14188c6c174f33339910870067423832c85387bbf565e3840e6c
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = '724b6bc17375e9ae0fe3a6bd9b671d2e9daa55d306d6d9563d704ee345b6dd86'
-app.config["SESSION_TYPE"] = "redis"
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_USE_SIGNER"] = True
-app.config["SESSION_KEY_PREFIX"] = "fleetdest:"
-app.config["SESSION_REDIS"] = redis.from_url("redis://default:YEfp7D27cwltDJKOTcND7Ua2yNRYpxdB@redis-13367.c8.us-east-1-2.ec2.redns.redis-cloud.com:13367")
-
+app.config['SESSION_TYPE'] = 'redis'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_KEY_PREFIX'] = 'your_prefix:'
+app.config['SESSION_REDIS'] = redis.StrictRedis(
+    host='redis-13367.c8.us-east-1-2.ec2.redns.redis-cloud.com',
+    port=13367,
+    password='YEfp7D27cwltDJKOTcND7Ua2yNRYpxdB'
+)
 
 # Use Pickle to handle bytes-like objects
 app.config["SESSION_SERIALIZER"] = pickle
