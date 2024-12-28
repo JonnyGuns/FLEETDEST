@@ -113,8 +113,11 @@ li {
     position: fixed;
     bottom: 10px;
     left: 10px;
-    font-size: 12px;
+    font-size: 14px; /* Adjusted font size */
     color: #ffffff;
-    opacity: 0.7; /* Slight transparency */
+    opacity: 0.8; /* Slight transparency */
     font-family: 'Orbitron', sans-serif;
+    background: rgba(0, 0, 0, 0.6); /* Subtle background box */
+    padding: 5px;
+    border-radius: 5px;
 }
