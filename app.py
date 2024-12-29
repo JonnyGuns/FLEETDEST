@@ -49,7 +49,7 @@ def callback():
     if state != session.get("state"):
         return "Invalid state parameter", 400
 
-    # Exchange authorization code for access token
+    # Exchange authorization code for access and refresh tokens
     token_url = "https://login.eveonline.com/v2/oauth/token"
     auth = (CLIENT_ID, SECRET_KEY)
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -61,9 +61,11 @@ def callback():
     token_response = requests.post(token_url, headers=headers, data=data, auth=auth)
 
     if token_response.status_code != 200:
-        return "Failed to fetch access token", 400
+        return "Failed to fetch tokens", 400
 
-    access_token = token_response.json()["access_token"]
+    tokens = token_response.json()
+    access_token = tokens["access_token"]
+    refresh_token = tokens["refresh_token"]
 
     # Fetch character information
     verify_url = "https://esi.evetech.net/verify/"
@@ -77,11 +79,61 @@ def callback():
     # Store character in session
     if "characters" not in session:
         session["characters"] = {}
-    session["characters"][character_name] = {"access_token": access_token}
+    session["characters"][character_name] = {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+    }
     session.modified = True
 
     print("Updated session['characters']:", session["characters"])
     return redirect(url_for("index"))
+
+# Helper function to refresh tokens
+def refresh_access_token(character_name):
+    character_data = session["characters"].get(character_name)
+    if not character_data or "refresh_token" not in character_data:
+        return None
+
+    refresh_token = character_data["refresh_token"]
+
+    # Request a new access token
+    token_url = "https://login.eveonline.com/v2/oauth/token"
+    auth = (CLIENT_ID, SECRET_KEY)
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    data = {
+        "grant_type": "refresh_token",
+        "refresh_token": refresh_token,
+    }
+
+    response = requests.post(token_url, headers=headers, data=data, auth=auth)
+
+    if response.status_code == 200:
+        tokens = response.json()
+        access_token = tokens["access_token"]
+        session["characters"][character_name]["access_token"] = access_token
+        session["characters"][character_name]["refresh_token"] = tokens.get("refresh_token", refresh_token)
+        session.modified = True
+        return access_token
+    else:
+        print(f"Failed to refresh token for {character_name}: {response.text}")
+        return None
+
+# Helper function to get a valid access token
+def get_valid_access_token(character_name):
+    character_data = session["characters"].get(character_name)
+    if not character_data:
+        return None
+
+    access_token = character_data["access_token"]
+
+    # Test the token
+    verify_url = "https://esi.evetech.net/verify/"
+    response = requests.get(verify_url, headers={"Authorization": f"Bearer {access_token}"})
+    if response.status_code == 200:
+        return access_token
+    else:
+        # Refresh the token if it's expired
+        return refresh_access_token(character_name)
 
 # Home page
 @app.route("/")
@@ -89,7 +141,7 @@ def index():
     characters = session.get("characters", {})
     return render_template("index.html", characters=characters)
 
-# Set destination route #
+# Set destination route
 @app.route("/set-destination", methods=["POST"])
 def set_destination():
     system_id = request.json.get("system_id")
@@ -101,8 +153,13 @@ def set_destination():
     characters = session.get("characters", {})
     results = {}
 
-    for character_name, character_data in characters.items():
-        headers = {"Authorization": f"Bearer {character_data['access_token']}"}
+    for character_name in characters.keys():
+        access_token = get_valid_access_token(character_name)
+        if not access_token:
+            results[character_name] = "Failed to refresh token or no valid token available."
+            continue
+
+        headers = {"Authorization": f"Bearer {access_token}"}
         params = {
             "destination_id": system_id,
             "add_to_beginning": not add_to_route,
@@ -126,8 +183,13 @@ def clear_waypoints():
     characters = session.get("characters", {})
     results = {}
 
-    for character_name, character_data in characters.items():
-        headers = {"Authorization": f"Bearer {character_data['access_token']}"}
+    for character_name in characters.keys():
+        access_token = get_valid_access_token(character_name)
+        if not access_token:
+            results[character_name] = "Failed to refresh token or no valid token available."
+            continue
+
+        headers = {"Authorization": f"Bearer {access_token}"}
         params = {
             "destination_id": None,
             "add_to_beginning": False,
@@ -165,7 +227,6 @@ def logout_character(character_name):
         session.modified = True
         return jsonify({"message": f"{character_name} logged out successfully"}), 200
     return jsonify({"error": f"{character_name} not found"}), 404
-
 
 if __name__ == "__main__":
     app.run(debug=True)
